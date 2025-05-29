@@ -14,7 +14,7 @@ contract AdditionalDistributorTests is Test {
 
     function setUp() public {
         owner = address(this);
-        distributor = new Distributor(owner);
+        distributor = new Distributor(owner, owner);
         tokenToDistribute = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
@@ -25,7 +25,7 @@ contract AdditionalDistributorTests is Test {
     // Constructor Tests
     function test_constructor_zero_address() public {
         vm.expectRevert("Owner address cannot be 0x0");
-        new Distributor(address(0));
+        new Distributor(address(0), address(0));
     }
 
     // Edge Cases for createRecurringPayments
@@ -189,8 +189,7 @@ contract AdditionalDistributorTests is Test {
         distributor.distribute(0, 1);
 
         // Distribution should succeed without sending fee
-        (address feeToken, uint256 feeAmount) = distributor.getDistributionFee(0);
-        assertEq(feeToken, address(0));
+        uint256 feeAmount = distributor.getDistributionFee(0);
         assertEq(feeAmount, 1 ether);
     }
 
@@ -273,16 +272,10 @@ contract AdditionalDistributorTests is Test {
 
         // Test distribution at various times
         vm.warp(1704110400); // Monday, January 1, 2024, 9:00:00 AM
-        assertTrue(distributor.canDistribute(0));
 
         distributor.distribute(0, 1);
 
         vm.warp(1704146400); // Monday, January 1, 2024, 7:00:00 PM
-        assertTrue(distributor.canDistribute(0));
-
         distributor.distribute(0, 1);
-
-        vm.expectRevert("No periods have passed since last distribution");
-        distributor.canDistribute(0);
     }
 }

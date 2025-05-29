@@ -52,7 +52,7 @@ contract Deploy is Script {
         vm.stopBroadcast();
 
         vm.startBroadcast(user1PrivateKey);
-        distributorFactory.newDistributor(user1);
+        distributorFactory.createDistributor(user1);
         vm.stopBroadcast();
 
         console.log("DistributorFactory: ", address(distributorFactory));

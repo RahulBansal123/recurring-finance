@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.2;
+
 interface IDistributorFactory {
-    /**
-     * @dev Emitted when a new Distributor is created.
-     * @param distributorAddress The address of the newly created Distributor contract.
-     * @param owner The owner of the new Distributor contract.
-     */
-    event NewDistributorEvent(address distributorAddress, address owner);
+    struct DistributorInfo {
+        address distributor;
+        address owner;
+        uint32 createdAt;
+        bool isActive;
+    }
+
+    event DistributorCreated(uint256 indexed distributorId, address indexed distributor, address indexed owner);
+    event DistributorDeactivated(uint256 indexed distributorId);
 
     // Functions
-    function newDistributor(address _owner) external returns (address);
+    function createDistributor(address owner) external returns (address distributor);
 
-    function getAllDistributors() external view returns (address[] memory);
+    function getOwnerDistributors(address owner) external view returns (uint256[] memory);
 
-    function getOwnerDistributors(address _owner) external view returns (address[] memory);
-
+    function deactivateDistributor(uint256 distributorId) external;
 }

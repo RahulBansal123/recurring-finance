@@ -10,91 +10,76 @@ contract DistributorFactoryTest is Test {
 
     DistributorFactory public factory;
     address public owner;
+    address public creator;
     address public user1;
     address public user2;
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     function setUp() public {
         owner = address(this);
         user1 = address(0x1);
         user2 = address(0x2);
-        factory = new DistributorFactory();
+        creator = address(0x3);
+        factory = new DistributorFactory(creator);
     }
 
     function test_create_distributor() public {
-        vm.prank(user1); // Set the user1 as the sender
-        address distributorAddress = factory.newDistributor(user1);
+        vm.prank(creator); // Set the creator as the sender
+        address distributorAddress = factory.createDistributor(user1);
 
         assertTrue(distributorAddress != address(0), "Distributor address should not be zero");
 
         vm.prank(user1); // Set the user1 as the sender
-        address[] memory distributors = factory.getOwnerDistributors(user1);
+        uint256[] memory distributors = factory.getOwnerDistributors(user1);
         assertEq(distributors.length, 1, "Should have one Distributor");
-        assertEq(distributors[0], distributorAddress, "Distributor address mismatch");
+
+        (address distributor, , , ) = factory.distributorInfos(distributors[0]);
+        assertEq(distributor, distributorAddress, "Distributor address mismatch");
     }
 
     function test_create_multiple_distributors() public {
-        vm.startPrank(user1);
+        vm.startPrank(creator);
 
-        address distributor1 = factory.newDistributor(user1);
-        address distributor2 = factory.newDistributor(user1);
-        address distributor3 = factory.newDistributor(user1);
+        address distributor1 = factory.createDistributor(user1);
+        address distributor2 = factory.createDistributor(user1);
+        address distributor3 = factory.createDistributor(user1);
 
-        address[] memory distributors = factory.getOwnerDistributors(user1);
+        uint256[] memory distributors = factory.getOwnerDistributors(user1);
         assertEq(distributors.length, 3, "Should have three Distributors");
-        assertEq(distributors[0], distributor1, "First Distributor address mismatch");
-        assertEq(distributors[1], distributor2, "Second Distributor address mismatch");
-        assertEq(distributors[2], distributor3, "Third Distributor address mismatch");
+
+        (address distributor1Address, , , ) = factory.distributorInfos(distributors[0]);
+        (address distributor2Address, , , ) = factory.distributorInfos(distributors[1]);
+        (address distributor3Address, , , ) = factory.distributorInfos(distributors[2]);
+
+        assertEq(distributor1Address, distributor1, "First Distributor address mismatch");
+        assertEq(distributor2Address, distributor2, "Second Distributor address mismatch");
+        assertEq(distributor3Address, distributor3, "Third Distributor address mismatch");
 
         vm.stopPrank();
     }
 
     function test_distributor_ownership() public {
-        vm.prank(user1);
-        address distributorAddress = factory.newDistributor(user1);
+        vm.prank(creator);
+        address distributorAddress = factory.createDistributor(user1);
 
         Distributor distributor = Distributor(payable(distributorAddress));
 
-        assertEq(
-            distributor.hasRole(distributor.DEFAULT_ADMIN_ROLE(), user1),
-            true,
-            "User1 should have DEFAULT_ADMIN_ROLE"
-        );
+        assertEq(distributor.hasRole(OPERATOR_ROLE, user1), true, "User1 should have OPERATOR_ROLE");
     }
 
     function test_get_distributors_for_different_users() public {
-        vm.prank(user1);
-        factory.newDistributor(user1);
-
-        vm.prank(user2);
-        factory.newDistributor(user2);
+        vm.prank(creator);
+        factory.createDistributor(user1);
+        factory.createDistributor(user2);
 
         vm.prank(user1);
-        address[] memory user1Distributors = factory.getOwnerDistributors(user1);
+        uint256[] memory user1Distributors = factory.getOwnerDistributors(user1);
         assertEq(user1Distributors.length, 1, "User1 should have one Distributor");
 
         vm.prank(user2);
-        address[] memory user2Distributors = factory.getOwnerDistributors(user2);
+        uint256[] memory user2Distributors = factory.getOwnerDistributors(user2);
         assertEq(user2Distributors.length, 1, "User2 should have one Distributor");
 
         assertTrue(user1Distributors[0] != user2Distributors[0], "Users should have different Distributors");
-    }
-
-    function test_get_all_distributors() public {
-        vm.prank(user1);
-        address distributor1 = factory.newDistributor(user1);
-
-        vm.prank(user2);
-        address distributor2 = factory.newDistributor(user2);
-
-        address[] memory allDistributors = factory.getAllDistributors();
-        assertEq(allDistributors.length, 2, "Should have two Distributors in total");
-        assertTrue(
-            allDistributors[0] == distributor1 || allDistributors[1] == distributor1,
-            "Distributor1 should be in the list"
-        );
-        assertTrue(
-            allDistributors[0] == distributor2 || allDistributors[1] == distributor2,
-            "Distributor2 should be in the list"
-        );
     }
 }

@@ -12,6 +12,7 @@ contract DistributorAccessControlTest is Test {
     address public nonAdmin;
 
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     function setUp() public {
         owner = address(this);
@@ -19,12 +20,16 @@ contract DistributorAccessControlTest is Test {
         admin3 = makeAddr("admin3");
         nonAdmin = makeAddr("nonAdmin");
 
-        distributor = new Distributor(owner);
+        distributor = new Distributor(owner, nonAdmin);
     }
 
     function test_accessControl_initial_admin_role() public view {
         assertTrue(distributor.hasRole(DEFAULT_ADMIN_ROLE, owner));
         assertFalse(distributor.hasRole(DEFAULT_ADMIN_ROLE, nonAdmin));
+    }
+
+    function test_accessControl_operator_role() public view {
+        assertFalse(distributor.hasRole(OPERATOR_ROLE, nonAdmin));
     }
 
     function test_accessControl_grant_admin_role() public {

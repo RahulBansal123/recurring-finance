@@ -18,7 +18,7 @@ contract SettersTest is Test {
 
     function setUp() public {
         owner = address(this);
-        distributor = new Distributor(owner);
+        distributor = new Distributor(owner, owner);
         token = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 

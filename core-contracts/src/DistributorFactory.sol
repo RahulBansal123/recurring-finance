@@ -1,53 +1,54 @@
-// ▗▄▄▖ ▗▄▄▄▖ ▗▄▄▖▗▖ ▗▖▗▄▄▖ ▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖
-// ▐▌ ▐▌▐▌   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌  █  ▐▛▚▖▐▌▐▌
-// ▐▛▀▚▖▐▛▀▀▘▐▌   ▐▌ ▐▌▐▛▀▚▖▐▛▀▚▖  █  ▐▌ ▝▜▌▐▌▝▜▌
-// ▐▌ ▐▌▐▙▄▄▖▝▚▄▄▖▝▚▄▞▘▐▌ ▐▌▐▌ ▐▌▗▄█▄▖▐▌  ▐▌▝▚▄▞▘
-
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./Distributor.sol";
 import "./interfaces/IDistributorFactory.sol";
 
 /**
  * @title DistributorFactory
- * @notice Manages creation and retrieval of Distributor contracts
+ * @dev Factory contract for creating optimized distributor instances
  */
-contract DistributorFactory is IDistributorFactory {
-    // Mapping to store Distributor contracts by owner
-    mapping(address => address[]) public ownerToDistributors;
-    // Array to store all Distributor contracts
-    address[] public allDistributors;
+contract DistributorFactory is AccessControl, IDistributorFactory {
+    bytes32 public constant CREATOR_ROLE = keccak256("CREATOR_ROLE");
+    address private immutable admin;
 
-    constructor() {}
+    mapping(address => uint256[]) private ownerToDistributorIds;
+    mapping(uint256 => DistributorInfo) public distributorInfos;
 
-    /**
-     * @notice Creates a new Distributor contract and assigns ownership to the caller.
-     * @param _owner The address to assign ownership to.
-     * @return The address of the newly created Distributor contract.
-     */
-    function newDistributor(address _owner) public returns (address) {
-        Distributor distributor = new Distributor(_owner);
-        ownerToDistributors[_owner].push(address(distributor));
-        allDistributors.push(address(distributor));
-        emit NewDistributorEvent(address(distributor), _owner);
-        return address(distributor);
+    uint256 public distributorCounter;
+
+    constructor(address creator) {
+        admin = msg.sender;
+
+        _grantRole(CREATOR_ROLE, creator);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    /**
-     * @notice Returns the Distributor contracts owned by the caller.
-     * @param _owner The address to get the Distributor contracts for.
-     * @return An array of Distributor contract addresses owned by the caller.
-     */
-    function getOwnerDistributors(address _owner) public view returns (address[] memory) {
-        return ownerToDistributors[_owner];
+    function createDistributor(address owner) external onlyRole(CREATOR_ROLE) returns (address distributor) {
+        uint256 distributorId = distributorCounter++;
+        distributor = address(new Distributor(admin, owner));
+
+        distributorInfos[distributorId] = DistributorInfo({
+            distributor: distributor,
+            owner: owner,
+            createdAt: uint32(block.timestamp),
+            isActive: true
+        });
+
+        ownerToDistributorIds[owner].push(distributorId);
+        emit DistributorCreated(distributorId, distributor, owner);
     }
 
-    /**
-     * @notice Returns all Distributor contracts created by the factory.
-     * @return An array of all Distributor contract addresses.
-     */
-    function getAllDistributors() public view returns (address[] memory) {
-        return allDistributors;
+    function getOwnerDistributors(address owner) external view returns (uint256[] memory) {
+        return ownerToDistributorIds[owner];
+    }
+
+    function deactivateDistributor(uint256 distributorId) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        distributorInfos[distributorId].isActive = false;
+        emit DistributorDeactivated(distributorId);
     }
 }

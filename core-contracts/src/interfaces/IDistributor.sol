@@ -1,25 +1,40 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.20;
 
 import {CronLibrary} from "../libraries/CronLibrary.sol";
 
 interface IDistributor {
-    // Events
+    error Unauthorized();
+    error InvalidRecurringPaymentId();
+    error ZeroAddress();
+    error ArrayLengthMismatch();
+    error InvalidTimeRange();
+    error DuplicateBeneficiary();
+    error ZeroAmount();
+    error CannotDistribute();
+    error PaymentEnded();
+    error NoPeriodsAvailable();
+    error InsufficientBalance();
+    error PaymentAlreadyRevoked();
+    error EndTimeAlreadyPassed();
+    error InvalidEndTime();
+    error InvalidFeeRate();
+    error FailedToSendEther();
+
     event NewRecurringPayment(
-        uint256 recurringPaymentId,
+        uint256 indexed recurringPaymentId,
         uint256 startTime,
         uint256 endTime,
         CronLibrary.CronSchedule cronSchedule,
-        address tokenToDistribute,
-        address distributionFeeToken,
+        address indexed tokenToDistribute,
+        address indexed distributionFeeToken,
         uint256 distributionFeeAmount
     );
 
-    event Distribution(uint256 recurringPaymentId, uint256 period, uint256 timestamp);
-
-    event DistributionRevoked(uint256 recurringPaymentId);
-
-    event EndTimeSet(uint256 recurringPaymentId, uint256 newEndTime);
+    event Distribution(uint256 indexed recurringPaymentId, uint256 periods, uint256 timestamp);
+    event DistributionRevoked(uint256 indexed recurringPaymentId);
+    event EndTimeSet(uint256 indexed recurringPaymentId, uint256 newEndTime);
+    event FeeRateSet(uint256 indexed recurringPaymentId, uint96 newFeeRate);
 
     // Functions
     function createRecurringPayments(
@@ -36,15 +51,12 @@ interface IDistributor {
     function distribute(uint256 _recurringPaymentId, uint256 _maxPeriods) external;
 
     function revokeRecurringPayments(uint256[] memory _recurringPaymentIds) external;
-
-    function canDistribute(uint256 _recurringPaymentId) external view returns (bool);
+    function withdrawFunds(address _token, uint256 _amount, address _beneficiary) external;
 
     function periodsToDistribute(
         uint256 _recurringPaymentId,
         uint256 _maxPeriodsToDistribute
     ) external view returns (uint256, uint256);
-
-    function withdrawFunds(address _token, uint256 _amount, address _beneficiary) external;
 
     function getRecurringPayment(
         uint256 _recurringPaymentId
@@ -63,7 +75,7 @@ interface IDistributor {
             bool
         );
 
-    function getDistributionFee(uint256 _recurringPaymentId) external view returns (address, uint256);
+    function getDistributionFee(uint256 _recurringPaymentId) external view returns (uint96);
 
     function setEndTime(uint256 _recurringPaymentId, uint256 _newEndTime) external;
 

@@ -20,7 +20,7 @@ contract DistributorTest is Test {
         distributionFeeToken = new MockERC20("Distribution Fee Token", "DFT", 1_000_000 ether);
 
         // Deploy Distributor with the owner address
-        distributor = new Distributor(owner);
+        distributor = new Distributor(owner, owner);
 
         // Transfer tokens to Distributor contract
         tokenToDistribute.transfer(address(distributor), 500_000 ether);
@@ -114,8 +114,7 @@ contract DistributorTest is Test {
             bool revoked
         ) = distributor.getRecurringPayment(0);
 
-        (address retrievedDistributionFeeToken, uint256 retrievedDistributionFeeAmount) = distributor
-            .getDistributionFee(0);
+        uint256 retrievedDistributionFeeAmount = distributor.getDistributionFee(0);
 
         // Assertions
         assertEq(retrievedStartTime, startTimes[0]);
@@ -124,7 +123,6 @@ contract DistributorTest is Test {
         assertEq(retrievedLastDistributionTime, 0);
         assertEq(retrievedDistributedUpToTime, 0);
         assertEq(retrievedTokenToDistribute, address(tokenToDistribute));
-        assertEq(retrievedDistributionFeeToken, address(distributionFeeToken));
         assertEq(retrievedDistributionFeeAmount, distributionFeeAmount);
         assertEq(revoked, false);
 
@@ -599,9 +597,8 @@ contract DistributorTest is Test {
         ) = distributor.getRecurringPayment(0);
         /* prettier-ignore */
 
-        (address retrievedDistributionFeeToken, uint256 retrievedDistributionFeeAmount) = distributor.getDistributionFee(0);
+        uint256 retrievedDistributionFeeAmount = distributor.getDistributionFee(0);
         assertEq(retrievedEndTime, type(uint256).max);
-        assertEq(retrievedDistributionFeeToken, address(distributionFeeToken));
         assertEq(retrievedDistributionFeeAmount, type(uint256).max);
     }
 
@@ -712,9 +709,7 @@ contract DistributorTest is Test {
         );
 
         // Verify the payment was created with zero reward
-        (address retrievedDistributionFeeToken, uint256 retrievedDistributionFeeAmount) = distributor
-            .getDistributionFee(0);
-        assertEq(retrievedDistributionFeeToken, address(distributionFeeToken));
+        uint256 retrievedDistributionFeeAmount = distributor.getDistributionFee(0);
         assertEq(retrievedDistributionFeeAmount, 0);
     }
 
@@ -815,8 +810,7 @@ contract DistributorTest is Test {
         );
 
         // Verify the payment was created with zero address reward token
-        (address retrievedRewardToken, uint256 retrievedRewardAmount) = distributor.getDistributionFee(0);
-        assertEq(retrievedRewardToken, address(0));
+        uint256 retrievedRewardAmount = distributor.getDistributionFee(0);
         assertEq(retrievedRewardAmount, 1 ether);
     }
 
