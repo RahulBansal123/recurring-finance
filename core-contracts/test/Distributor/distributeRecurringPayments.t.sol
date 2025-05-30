@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.18;
 import "forge-std/Test.sol";
-import "../../src/DistributorFactory.sol";
 import "../../src/interfaces/IDistributor.sol";
 import "../../src/libraries/DateTimeLibrary.sol";
+import {Distributor} from "../../src/Distributor.sol";
 import {MockERC20} from "./Distributor.t.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -22,7 +22,7 @@ contract DistributeRecurringPaymentsTest is Test {
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
         // Deploy Distributor with the owner address
-        distributor = new Distributor(owner, owner);
+        distributor = new Distributor();
 
         // Transfer tokens to Distributor contract
         tokenToDistribute.transfer(address(distributor), 500_000 ether);
@@ -66,15 +66,13 @@ contract DistributeRecurringPaymentsTest is Test {
         uint256[] memory rewardAmounts = new uint256[](1);
         rewardAmounts[0] = 1 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            rewardTokensArray,
-            rewardAmounts
+            tokens
         );
 
         return distributor.recurringPaymentCounter() - 1;

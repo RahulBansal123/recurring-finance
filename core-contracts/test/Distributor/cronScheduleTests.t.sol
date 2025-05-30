@@ -15,7 +15,7 @@ contract CronScheduleTests is Test {
 
     function setUp() public {
         owner = address(this);
-        distributor = new Distributor(owner, owner);
+        distributor = new Distributor();
         tokenToDistribute = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
@@ -51,15 +51,13 @@ contract CronScheduleTests is Test {
         uint256[] memory rewardAmounts = new uint256[](1);
         rewardAmounts[0] = 1 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            rewardTokensArray,
-            rewardAmounts
+            tokens
         );
     }
 

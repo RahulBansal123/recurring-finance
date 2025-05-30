@@ -4,48 +4,65 @@ pragma solidity ^0.8.20;
 import {CronLibrary} from "../libraries/CronLibrary.sol";
 
 interface IDistributor {
-    error Unauthorized();
+    struct PaymentKey {
+        uint128 startTime;
+        uint128 endTime;
+        uint128 distributedUpToTime;
+        uint128 lastDistributionTime;
+        address owner;
+        address tokenToDistribute;
+        uint96 feeRate; // Packed with revoked flag
+        bool revoked; // 1 byte
+        CronLibrary.CronSchedule cronSchedule;
+        address[] beneficiaries;
+        uint256[] beneficiaryAmounts;
+    }
+
     error InvalidRecurringPaymentId();
-    error ZeroAddress();
     error ArrayLengthMismatch();
+    error ZeroAmount();
+    error ZeroAddress();
     error InvalidTimeRange();
     error DuplicateBeneficiary();
-    error ZeroAmount();
-    error CannotDistribute();
-    error PaymentEnded();
-    error NoPeriodsAvailable();
-    error InsufficientBalance();
     error PaymentAlreadyRevoked();
+    error CannotDistribute();
+    error Unauthorized();
+    error FailedToSendEther();
     error EndTimeAlreadyPassed();
     error InvalidEndTime();
     error InvalidFeeRate();
-    error FailedToSendEther();
+    error InsufficientBalance();
 
+    // Events
     event NewRecurringPayment(
-        uint256 indexed recurringPaymentId,
+        uint256 indexed paymentId,
         uint256 startTime,
         uint256 endTime,
         CronLibrary.CronSchedule cronSchedule,
-        address indexed tokenToDistribute,
-        address indexed distributionFeeToken,
-        uint256 distributionFeeAmount
+        address tokenToDistribute
     );
-
-    event Distribution(uint256 indexed recurringPaymentId, uint256 periods, uint256 timestamp);
-    event DistributionRevoked(uint256 indexed recurringPaymentId);
-    event EndTimeSet(uint256 indexed recurringPaymentId, uint256 newEndTime);
-    event FeeRateSet(uint256 indexed recurringPaymentId, uint96 newFeeRate);
+    event Distribution(uint256 indexed paymentId, uint256 periods, uint256 timestamp);
+    event DistributionRevoked(uint256 indexed paymentId);
+    event EndTimeSet(uint256 indexed paymentId, uint256 newEndTime);
+    event FeeRateSet(uint256 indexed paymentId, uint96 newFeeRate);
 
     // Functions
-    function createRecurringPayments(
-        uint256[] memory _startTimes,
-        uint256[] memory _endTimes,
-        CronLibrary.CronSchedule[] memory _cronSchedules,
-        address[][] memory _beneficiaries,
-        uint256[][] memory _beneficiariesAmounts,
-        address[] memory _tokensToDistribute,
-        address[] memory _distributionFeeTokens,
-        uint256[] memory _distributionFeeAmounts
+    function createRecurringPayment(
+        uint256 startTime,
+        uint256 endTime,
+        CronLibrary.CronSchedule calldata cronSchedule,
+        address[] calldata beneficiaries,
+        uint256[] calldata beneficiaryAmounts,
+        address tokenToDistribute
+    ) external returns (uint256 paymentId);
+
+    function batchCreateRecurringPayments(
+        uint256[] calldata _startTimes,
+        uint256[] calldata _endTimes,
+        CronLibrary.CronSchedule[] calldata _cronSchedules,
+        address[][] calldata _beneficiaries,
+        uint256[][] calldata _beneficiariesAmounts,
+        address[] calldata _tokensToDistribute
     ) external;
 
     function distribute(uint256 _recurringPaymentId, uint256 _maxPeriods) external;
@@ -64,15 +81,15 @@ interface IDistributor {
         external
         view
         returns (
-            uint256,
-            uint256,
-            CronLibrary.CronSchedule memory,
-            uint256,
-            uint256,
-            address,
-            address[] memory,
-            uint256[] memory,
-            bool
+            uint256, // 0: startTime
+            uint256, // 1: endTime
+            CronLibrary.CronSchedule memory, // 2: cronSchedule
+            uint256, // 3: distributedUpToTime
+            uint256, // 4: lastDistributionTime
+            address, // 5: tokenToDistribute
+            address[] memory, // 6: beneficiaries
+            uint256[] memory, // 7: beneficiariesAmounts
+            bool // 8: revoked
         );
 
     function getDistributionFee(uint256 _recurringPaymentId) external view returns (uint96);

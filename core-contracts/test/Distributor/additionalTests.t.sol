@@ -14,18 +14,12 @@ contract AdditionalDistributorTests is Test {
 
     function setUp() public {
         owner = address(this);
-        distributor = new Distributor(owner, owner);
+        distributor = new Distributor();
         tokenToDistribute = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
         tokenToDistribute.transfer(address(distributor), 500_000 ether);
         rewardToken.transfer(address(distributor), 500_000 ether);
-    }
-
-    // Constructor Tests
-    function test_constructor_zero_address() public {
-        vm.expectRevert("Owner address cannot be 0x0");
-        new Distributor(address(0), address(0));
     }
 
     // Edge Cases for createRecurringPayments
@@ -68,15 +62,13 @@ contract AdditionalDistributorTests is Test {
         uint256[] memory distributionFeeAmounts = new uint256[](1);
         distributionFeeAmounts[0] = 1 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Verify all beneficiaries were added
@@ -121,15 +113,13 @@ contract AdditionalDistributorTests is Test {
         uint256[] memory distributionFeeAmounts = new uint256[](1);
         distributionFeeAmounts[0] = 1 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         vm.warp(block.timestamp + 1 hours);
@@ -174,15 +164,13 @@ contract AdditionalDistributorTests is Test {
         uint256[] memory distributionFeeAmounts = new uint256[](1);
         distributionFeeAmounts[0] = 1 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         vm.warp(block.timestamp + 1 hours);
@@ -259,15 +247,13 @@ contract AdditionalDistributorTests is Test {
         uint256[] memory distributionFeeAmounts = new uint256[](1);
         distributionFeeAmounts[0] = 1 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Test distribution at various times

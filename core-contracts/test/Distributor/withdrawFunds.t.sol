@@ -1,6 +1,6 @@
 pragma solidity ^0.8.18;
 import "forge-std/Test.sol";
-import "../../src/DistributorFactory.sol";
+import {Distributor} from "../../src/Distributor.sol";
 import {MockERC20} from "./Distributor.t.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -18,7 +18,7 @@ contract WithdrawFundsTest is Test {
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
         // Deploy Distributor with the owner address
-        distributor = new Distributor(owner, owner);
+        distributor = new Distributor();
 
         // Transfer tokens to Distributor contract
         tokenToDistribute.transfer(address(distributor), 500_000 ether);

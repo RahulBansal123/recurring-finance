@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.18;
 import "forge-std/Test.sol";
-import "../../src/DistributorFactory.sol";
 import "../../src/interfaces/IDistributor.sol";
+import {Distributor} from "../../src/Distributor.sol";
 import {MockERC20} from "./Distributor.t.sol";
 
 contract DistributorTest is Test {
@@ -14,13 +14,14 @@ contract DistributorTest is Test {
 
     function setUp() public {
         owner = address(this);
+        distributor = new Distributor();
 
         // Deploy mock tokens
         tokenToDistribute = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         distributionFeeToken = new MockERC20("Distribution Fee Token", "DFT", 1_000_000 ether);
 
         // Deploy Distributor with the owner address
-        distributor = new Distributor(owner, owner);
+        distributor = new Distributor();
 
         // Transfer tokens to Distributor contract
         tokenToDistribute.transfer(address(distributor), 500_000 ether);
@@ -90,15 +91,13 @@ contract DistributorTest is Test {
         uint256[] memory distributionFeeAmounts = new uint256[](1);
         distributionFeeAmounts[0] = distributionFeeAmount;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         (
@@ -167,15 +166,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = distributionFeeAmount;
 
         vm.expectRevert("There must be a start date");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 
@@ -212,15 +209,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = distributionFeeAmount;
 
         vm.expectRevert("Array length mismatch");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 
@@ -256,15 +251,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = distributionFeeAmount;
 
         vm.expectRevert("Token to distribute cannot be 0");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 
@@ -299,15 +292,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = distributionFeeAmount;
 
         vm.expectRevert("End time must be greater than start time or 0");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 
@@ -345,15 +336,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = distributionFeeAmount;
 
         vm.expectRevert("Beneficiaries and amounts length mismatch");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 
@@ -403,15 +392,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = 1 ether;
         distributionFeeAmounts[1] = 2 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         assertEq(distributor.recurringPaymentCounter(), 2);
@@ -450,15 +437,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = 1 ether;
 
         vm.expectRevert("End time must be greater than start time or 0");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 
@@ -495,15 +480,13 @@ contract DistributorTest is Test {
         uint256[] memory distributionFeeAmounts = new uint256[](1);
         distributionFeeAmounts[0] = 1 ether;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Payment should be created but with no beneficiaries
@@ -565,15 +548,13 @@ contract DistributorTest is Test {
         uint256[] memory distributionFeeAmounts = new uint256[](1);
         distributionFeeAmounts[0] = type(uint256).max;
 
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Verify the payment was created with max values
@@ -643,15 +624,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = 1 ether;
 
         vm.expectRevert("Duplicate beneficiaries");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // // The last amount should override the previous one for the same address
@@ -697,15 +676,13 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = 0; // Zero reward amount
 
         // Should succeed as zero reward amount is valid
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Verify the payment was created with zero reward
@@ -753,15 +730,13 @@ contract DistributorTest is Test {
 
         // Should fail as zero amounts are not valid
         vm.expectRevert("Amount per period must be greater than 0");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 
@@ -798,15 +773,13 @@ contract DistributorTest is Test {
         rewardAmounts[0] = 1 ether;
 
         // Should succeed as zero address reward token is valid (means no reward)
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             cronSchedules,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            rewardTokens,
-            rewardAmounts
+            tokens
         );
 
         // Verify the payment was created with zero address reward token
@@ -845,15 +818,13 @@ contract DistributorTest is Test {
             daysOfWeek: new uint8[](0)
         });
         vm.expectRevert("Too many hour values");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Test 2: Invalid hour value
@@ -866,15 +837,13 @@ contract DistributorTest is Test {
             daysOfWeek: new uint8[](0)
         });
         vm.expectRevert("Invalid hour value");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Test 3: Duplicate hours
@@ -888,15 +857,13 @@ contract DistributorTest is Test {
             daysOfWeek: new uint8[](0)
         });
         vm.expectRevert("Duplicate hour value");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Test 4: Invalid day of month
@@ -909,15 +876,13 @@ contract DistributorTest is Test {
             daysOfWeek: new uint8[](0)
         });
         vm.expectRevert("Invalid day of month value");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Test 5: Invalid month
@@ -930,15 +895,13 @@ contract DistributorTest is Test {
             daysOfWeek: new uint8[](0)
         });
         vm.expectRevert("Invalid month value");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Test 6: Invalid day of week
@@ -951,15 +914,13 @@ contract DistributorTest is Test {
             daysOfWeek: invalidDaysOfWeek
         });
         vm.expectRevert("Invalid day of week value");
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
 
         // Test 7: Valid cron schedule
@@ -975,15 +936,13 @@ contract DistributorTest is Test {
             daysOfWeek: validDaysOfWeek
         });
         // This should not revert
-        distributor.createRecurringPayments(
+        distributor.batchCreateRecurringPayments(
             startTimes,
             endTimes,
             intervals,
             beneficiariesArray,
             amountsArray,
-            tokens,
-            distributionFeeTokens,
-            distributionFeeAmounts
+            tokens
         );
     }
 }

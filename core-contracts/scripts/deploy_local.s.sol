@@ -1,7 +1,6 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import {DistributorFactory} from "../src/DistributorFactory.sol";
 import "../test/tokens/USDC.sol";
 import "../test/tokens/WrappedETH.sol";
 import "../test/tokens/TestToken.sol";
@@ -17,7 +16,6 @@ contract Deploy is Script {
 
     address deployer = vm.addr(deployerPrivateKey);
 
-    DistributorFactory distributorFactory;
     USDC usdc;
     WrappedETH weth;
     TestToken testToken;
@@ -28,7 +26,6 @@ contract Deploy is Script {
         uint256 initialUSDCSupply = 1000000000000;
         uint256 initialWethAmount = 10000000000000000000000000000;
 
-        distributorFactory = new DistributorFactory();
         usdc = new USDC(initialUSDCSupply);
         testToken = new TestToken(initialUSDCSupply);
         weth = new WrappedETH();
@@ -52,10 +49,9 @@ contract Deploy is Script {
         vm.stopBroadcast();
 
         vm.startBroadcast(user1PrivateKey);
-        distributorFactory.createDistributor(user1);
+        // distributorFactory.createDistributor(user1);
         vm.stopBroadcast();
 
-        console.log("DistributorFactory: ", address(distributorFactory));
         console.log("USDC: ", address(usdc));
         console.log("WETH: ", address(weth));
         console.log("TestToken: ", address(testToken));
