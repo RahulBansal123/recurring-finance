@@ -1,6 +1,40 @@
 # Recurring Finance 💰
 
-A decentralized application (dApp) for automating cryptocurrency payments using smart wallet delegation and session keys. Built on Ethereum-compatible networks, this platform enables users to set up recurring payments with custom schedules, beneficiaries, and spending limits.
+Recurring Finance is a decentralized application that automates cryptocurrency payments through a singleton distributor contract architecture. The system leverages smart wallet delegation and session keys to enable users to set up recurring payments with custom schedules, beneficiaries, and spending limits.
+
+
+### Flowchart
+![flowchart](./flowchart.png)
+
+
+## Architecture Components
+### On-Chain Components
+1. Singleton Distributor Contract: 
+   - Single smart contract that manages all recurring payments across all users 
+   - Added `CREATOR_ROLE` to restrict access to scheduled payment creation
+   - Added pausable functionality to prevent contract exploits
+   - Added a default 2% platform fee which can be customized by the `ADMIN`
+2. Session Key Management with EIP 7702: Handles delegation of spending authority with daily limits and expiration dates
+3. Gas Optimization: 
+   - Eliminates per-user distributor contract deployment costs
+   - Reduces storage slots by packing related variables
+   - Replaced EnumerableSet with Arrays
+   - Optimized cron schedule validation with bitmasking to do validation in O(n) time which was previously O(n^2)
+
+#### Off-Chain Components
+1. Cron Job Scheduler
+   - Automated Execution: Runs on hourly basis to trigger payment distributions
+   - Smart Triggering: Calls the distribute() function on the singleton contract
+
+2. Frontend Application (Next.js)
+3. Relayer Infrastructure: Relayers execute transactions on behalf of users to create the recurring payment schedule
+
+### Singleton Approach Advantages
+1. Cost Efficiency: No contract deployment costs per user
+2. Simplified Maintenance: Single contract to maintain and upgrade
+3. Cross-User Operations: Easy implementation of global features
+4. Reduced Attack Surface: One well-audited contract
+5. Platform Economics: Centralized fee collection and analytics 
 
 ## 🌟 Features
 
@@ -29,7 +63,6 @@ A decentralized application (dApp) for automating cryptocurrency payments using 
 ## 🏗️ Architecture
 
 ### Smart Contracts
-- **DistributorFactory**: Creates and manages distributor contracts
 - **Distributor**: Handles recurring payment logic and execution
 - **Session Key System**: Manages delegation and spending limits
 
@@ -92,25 +125,13 @@ A decentralized application (dApp) for automating cryptocurrency payments using 
 1. **Connect Your Wallet**
    - Click "Generate Wallet" to create a new smart wallet
 
-2. **Deploy Distributor**
-   - Click "Deploy Distributor" to deploy a new Distributor contract from the DistributorFactory
-
 2. **Add Session Key**
    - Distributor contract address is used as the delegated relayer address
-   - Set daily spending limit
-   - Choose expiration date
+   - Choose plan
    - Sign the delegation transaction
 
-3. **Schedule Payments**
-   - Set start and end dates
-   - Configure execution schedule (hours, days, months)
-   - Add beneficiaries and amounts
-   - Choose tokens and fee structure
-   - Submit the recurring payment setup
-
-4. **Distribute**
+3. **Distribute**
    - Anyone can distribute the payments to all beneficiaries
-   - There is also a test function to test the payments
 
 ## 🙏 Acknowledgments
 
