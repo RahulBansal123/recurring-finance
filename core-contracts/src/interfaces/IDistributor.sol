@@ -48,6 +48,7 @@ interface IDistributor {
 
     // Functions
     function createRecurringPayment(
+        address owner,
         uint256 startTime,
         uint256 endTime,
         CronLibrary.CronSchedule calldata cronSchedule,
@@ -57,6 +58,7 @@ interface IDistributor {
     ) external returns (uint256 paymentId);
 
     function batchCreateRecurringPayments(
+        address[] calldata _owners,
         uint256[] calldata _startTimes,
         uint256[] calldata _endTimes,
         CronLibrary.CronSchedule[] calldata _cronSchedules,

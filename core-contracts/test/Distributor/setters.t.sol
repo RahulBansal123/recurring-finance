@@ -18,7 +18,7 @@ contract SettersTest is Test {
 
     function setUp() public {
         owner = address(this);
-        distributor = new Distributor();
+        distributor = new Distributor(owner);
         token = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
@@ -60,7 +60,11 @@ contract SettersTest is Test {
         uint256[] memory rewardAmounts = new uint256[](1);
         rewardAmounts[0] = 10;
 
+        address[] memory owners = new address[](1);
+        owners[0] = owner;
+
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             periodIntervals,

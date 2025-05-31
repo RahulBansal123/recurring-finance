@@ -18,7 +18,7 @@ contract WithdrawFundsTest is Test {
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
         // Deploy Distributor with the owner address
-        distributor = new Distributor();
+        distributor = new Distributor(owner);
 
         // Transfer tokens to Distributor contract
         tokenToDistribute.transfer(address(distributor), 500_000 ether);

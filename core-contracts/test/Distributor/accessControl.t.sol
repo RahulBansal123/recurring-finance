@@ -20,7 +20,7 @@ contract DistributorAccessControlTest is Test {
         admin3 = makeAddr("admin3");
         nonAdmin = makeAddr("nonAdmin");
 
-        distributor = new Distributor();
+        distributor = new Distributor(owner);
     }
 
     function test_accessControl_initial_admin_role() public view {

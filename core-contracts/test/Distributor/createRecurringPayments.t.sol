@@ -8,20 +8,23 @@ import {MockERC20} from "./Distributor.t.sol";
 
 contract DistributorTest is Test {
     address public owner;
+    address[] public owners;
     Distributor public distributor;
     MockERC20 public tokenToDistribute;
     MockERC20 public distributionFeeToken;
 
     function setUp() public {
         owner = address(this);
-        distributor = new Distributor();
+        owners[0] = owner;
+
+        distributor = new Distributor(owner);
 
         // Deploy mock tokens
         tokenToDistribute = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         distributionFeeToken = new MockERC20("Distribution Fee Token", "DFT", 1_000_000 ether);
 
         // Deploy Distributor with the owner address
-        distributor = new Distributor();
+        distributor = new Distributor(owner);
 
         // Transfer tokens to Distributor contract
         tokenToDistribute.transfer(address(distributor), 500_000 ether);
@@ -92,6 +95,7 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = distributionFeeAmount;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -167,6 +171,7 @@ contract DistributorTest is Test {
 
         vm.expectRevert("There must be a start date");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -210,6 +215,7 @@ contract DistributorTest is Test {
 
         vm.expectRevert("Array length mismatch");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -252,6 +258,7 @@ contract DistributorTest is Test {
 
         vm.expectRevert("Token to distribute cannot be 0");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -293,6 +300,7 @@ contract DistributorTest is Test {
 
         vm.expectRevert("End time must be greater than start time or 0");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -337,6 +345,7 @@ contract DistributorTest is Test {
 
         vm.expectRevert("Beneficiaries and amounts length mismatch");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -393,6 +402,7 @@ contract DistributorTest is Test {
         distributionFeeAmounts[1] = 2 ether;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -438,6 +448,7 @@ contract DistributorTest is Test {
 
         vm.expectRevert("End time must be greater than start time or 0");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -481,6 +492,7 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = 1 ether;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -549,6 +561,7 @@ contract DistributorTest is Test {
         distributionFeeAmounts[0] = type(uint256).max;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -625,6 +638,7 @@ contract DistributorTest is Test {
 
         vm.expectRevert("Duplicate beneficiaries");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -677,6 +691,7 @@ contract DistributorTest is Test {
 
         // Should succeed as zero reward amount is valid
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -731,6 +746,7 @@ contract DistributorTest is Test {
         // Should fail as zero amounts are not valid
         vm.expectRevert("Amount per period must be greater than 0");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -774,6 +790,7 @@ contract DistributorTest is Test {
 
         // Should succeed as zero address reward token is valid (means no reward)
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             cronSchedules,
@@ -817,8 +834,10 @@ contract DistributorTest is Test {
             months: new uint8[](0),
             daysOfWeek: new uint8[](0)
         });
+
         vm.expectRevert("Too many hour values");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -836,8 +855,10 @@ contract DistributorTest is Test {
             months: new uint8[](0),
             daysOfWeek: new uint8[](0)
         });
+
         vm.expectRevert("Invalid hour value");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -856,8 +877,10 @@ contract DistributorTest is Test {
             months: new uint8[](0),
             daysOfWeek: new uint8[](0)
         });
+
         vm.expectRevert("Duplicate hour value");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -875,8 +898,10 @@ contract DistributorTest is Test {
             months: new uint8[](0),
             daysOfWeek: new uint8[](0)
         });
+
         vm.expectRevert("Invalid day of month value");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -894,8 +919,10 @@ contract DistributorTest is Test {
             months: invalidMonths,
             daysOfWeek: new uint8[](0)
         });
+
         vm.expectRevert("Invalid month value");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -915,6 +942,7 @@ contract DistributorTest is Test {
         });
         vm.expectRevert("Invalid day of week value");
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -935,8 +963,10 @@ contract DistributorTest is Test {
             months: new uint8[](0),
             daysOfWeek: validDaysOfWeek
         });
+
         // This should not revert
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,

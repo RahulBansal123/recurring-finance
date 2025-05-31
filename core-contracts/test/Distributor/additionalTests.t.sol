@@ -14,7 +14,7 @@ contract AdditionalDistributorTests is Test {
 
     function setUp() public {
         owner = address(this);
-        distributor = new Distributor();
+        distributor = new Distributor(owner);
         tokenToDistribute = new MockERC20("Distribute Token", "DST", 1_000_000 ether);
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
@@ -32,6 +32,9 @@ contract AdditionalDistributorTests is Test {
             beneficiaries[i] = address(uint160(i + 1));
             amounts[i] = 1 ether;
         }
+
+        address[] memory owners = new address[](1);
+        owners[0] = owner;
 
         uint256[] memory startTimes = new uint256[](1);
         startTimes[0] = block.timestamp;
@@ -63,6 +66,7 @@ contract AdditionalDistributorTests is Test {
         distributionFeeAmounts[0] = 1 ether;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -84,6 +88,9 @@ contract AdditionalDistributorTests is Test {
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = 1_000_000 ether; // More than contract balance
 
+        address[] memory owners = new address[](1);
+        owners[0] = owner;
+
         uint256[] memory startTimes = new uint256[](1);
         startTimes[0] = block.timestamp;
 
@@ -114,6 +121,7 @@ contract AdditionalDistributorTests is Test {
         distributionFeeAmounts[0] = 1 ether;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -134,6 +142,9 @@ contract AdditionalDistributorTests is Test {
         beneficiaries[0] = address(0x1);
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = 1 ether;
+
+        address[] memory owners = new address[](1);
+        owners[0] = owner;
 
         uint256[] memory startTimes = new uint256[](1);
         startTimes[0] = block.timestamp;
@@ -165,6 +176,7 @@ contract AdditionalDistributorTests is Test {
         distributionFeeAmounts[0] = 1 ether;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
@@ -223,6 +235,9 @@ contract AdditionalDistributorTests is Test {
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = 1 ether;
 
+        address[] memory owners = new address[](1);
+        owners[0] = owner;
+
         uint256[] memory startTimes = new uint256[](1);
         startTimes[0] = block.timestamp;
 
@@ -248,6 +263,7 @@ contract AdditionalDistributorTests is Test {
         distributionFeeAmounts[0] = 1 ether;
 
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,

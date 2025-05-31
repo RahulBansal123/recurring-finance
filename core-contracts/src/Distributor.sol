@@ -19,6 +19,19 @@ import "./interfaces/ISessionKeyManager.sol";
  */
 contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
     using SafeERC20 for IERC20;
+    bytes32 public constant CREATOR_ROLE = keccak256("CREATOR_ROLE");
+
+    // Struct to group creation parameters and reduce stack depth
+    struct CreatePaymentParams {
+        address owner;
+        uint256 paymentId;
+        uint256 startTime;
+        uint256 endTime;
+        CronLibrary.CronSchedule cronSchedule;
+        address[] beneficiaries;
+        uint256[] beneficiariesAmounts;
+        address tokenToDistribute;
+    }
 
     mapping(uint256 => PaymentKey) private recurringPayments;
     mapping(address => uint256[]) private ownerToPaymentIds;
@@ -38,18 +51,20 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
         _;
     }
 
-    constructor() {
+    constructor(address _creator) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(CREATOR_ROLE, _creator);
     }
 
     function createRecurringPayment(
+        address owner,
         uint256 startTime,
         uint256 endTime,
         CronLibrary.CronSchedule calldata cronSchedule,
         address[] calldata beneficiaries,
         uint256[] calldata beneficiaryAmounts,
         address tokenToDistribute
-    ) external whenNotPaused returns (uint256 paymentId) {
+    ) external whenNotPaused onlyRole(CREATOR_ROLE) returns (uint256 paymentId) {
         if (beneficiaries.length == 0) revert ZeroAmount();
 
         if (beneficiaries.length != beneficiaryAmounts.length) {
@@ -58,25 +73,29 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
 
         paymentId = recurringPaymentCounter++;
 
-        _createRecurringPayment(
-            paymentId,
-            startTime,
-            endTime,
-            cronSchedule,
-            beneficiaries,
-            beneficiaryAmounts,
-            tokenToDistribute
-        );
+        CreatePaymentParams memory params = CreatePaymentParams({
+            owner: owner,
+            paymentId: paymentId,
+            startTime: startTime,
+            endTime: endTime,
+            cronSchedule: cronSchedule,
+            beneficiaries: beneficiaries,
+            beneficiariesAmounts: beneficiaryAmounts,
+            tokenToDistribute: tokenToDistribute
+        });
+
+        _createRecurringPayment(params);
     }
 
     function batchCreateRecurringPayments(
+        address[] calldata _owners,
         uint256[] calldata _startTimes,
         uint256[] calldata _endTimes,
         CronLibrary.CronSchedule[] calldata _cronSchedules,
         address[][] calldata _beneficiaries,
         uint256[][] calldata _beneficiariesAmounts,
         address[] calldata _tokensToDistribute
-    ) external whenNotPaused {
+    ) external whenNotPaused onlyRole(CREATOR_ROLE) {
         uint256 length = _startTimes.length;
         if (length == 0) revert ZeroAmount();
 
@@ -93,15 +112,18 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
         uint256 currentCounter = recurringPaymentCounter;
 
         for (uint256 i = 0; i < length; ) {
-            _createRecurringPayment(
-                currentCounter + i,
-                _startTimes[i],
-                _endTimes[i],
-                _cronSchedules[i],
-                _beneficiaries[i],
-                _beneficiariesAmounts[i],
-                _tokensToDistribute[i]
-            );
+            CreatePaymentParams memory params = CreatePaymentParams({
+                owner: _owners[i],
+                paymentId: currentCounter + i,
+                startTime: _startTimes[i],
+                endTime: _endTimes[i],
+                cronSchedule: _cronSchedules[i],
+                beneficiaries: _beneficiaries[i],
+                beneficiariesAmounts: _beneficiariesAmounts[i],
+                tokenToDistribute: _tokensToDistribute[i]
+            });
+
+            _createRecurringPayment(params);
 
             unchecked {
                 ++i;
@@ -111,43 +133,55 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
         recurringPaymentCounter = currentCounter + length;
     }
 
-    function _createRecurringPayment(
-        uint256 _paymentId,
-        uint256 _startTime,
-        uint256 _endTime,
-        CronLibrary.CronSchedule calldata _cronSchedule,
-        address[] calldata _beneficiaries,
-        uint256[] calldata _beneficiariesAmounts,
-        address _tokenToDistribute
-    ) internal {
-        if (_tokenToDistribute == address(0)) revert ZeroAddress();
-        if (_endTime != 0 && _endTime <= _startTime) revert InvalidTimeRange();
-        if (_beneficiaries.length != _beneficiariesAmounts.length) revert ArrayLengthMismatch();
+    function _createRecurringPayment(CreatePaymentParams memory params) internal {
+        if (params.tokenToDistribute == address(0)) revert ZeroAddress();
+        if (params.endTime != 0 && params.endTime <= params.startTime) revert InvalidTimeRange();
+        if (params.beneficiaries.length != params.beneficiariesAmounts.length) revert ArrayLengthMismatch();
 
-        CronLibrary.validateCronSchedule(_cronSchedule);
+        CronLibrary.validateCronSchedule(params.cronSchedule);
 
-        PaymentKey storage payment = recurringPayments[_paymentId];
+        PaymentKey storage payment = recurringPayments[params.paymentId];
 
-        payment.startTime = uint128(_startTime);
-        payment.endTime = uint128(_endTime);
+        payment.startTime = uint128(params.startTime);
+        payment.endTime = uint128(params.endTime);
         payment.distributedUpToTime = 0;
         payment.lastDistributionTime = 0;
-        payment.owner = msg.sender;
-        payment.tokenToDistribute = _tokenToDistribute;
+        payment.owner = params.owner;
+        payment.tokenToDistribute = params.tokenToDistribute;
         payment.feeRate = DEFAULT_FEE_RATE;
         payment.revoked = false;
-        payment.cronSchedule = _cronSchedule;
+        payment.cronSchedule = params.cronSchedule;
 
-        uint256 beneficiaryCount = _beneficiaries.length;
+        _setBeneficiaries(payment, params.beneficiaries, params.beneficiariesAmounts);
+
+        ownerToPaymentIds[params.owner].push(params.paymentId);
+
+        emit NewRecurringPayment(
+            params.paymentId,
+            params.startTime,
+            params.endTime,
+            params.cronSchedule,
+            params.tokenToDistribute
+        );
+    }
+
+    function _setBeneficiaries(
+        PaymentKey storage payment,
+        address[] memory beneficiaries,
+        uint256[] memory beneficiaryAmounts
+    ) internal {
+        uint256 beneficiaryCount = beneficiaries.length;
         payment.beneficiaries = new address[](beneficiaryCount);
         payment.beneficiaryAmounts = new uint256[](beneficiaryCount);
 
         for (uint256 i = 0; i < beneficiaryCount; ) {
-            address beneficiary = _beneficiaries[i];
-            uint256 amount = _beneficiariesAmounts[i];
+            address beneficiary = beneficiaries[i];
+            uint256 amount = beneficiaryAmounts[i];
 
             if (beneficiary == address(0)) revert ZeroAddress();
             if (amount == 0) revert ZeroAmount();
+
+            // Check for duplicates
             for (uint256 j; j < i; ) {
                 if (payment.beneficiaries[j] == beneficiary) {
                     revert DuplicateBeneficiary();
@@ -164,10 +198,6 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
                 ++i;
             }
         }
-
-        ownerToPaymentIds[msg.sender].push(_paymentId);
-
-        emit NewRecurringPayment(_paymentId, _startTime, _endTime, _cronSchedule, _tokenToDistribute);
     }
 
     function distribute(
@@ -184,8 +214,13 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
         payment.distributedUpToTime = uint128(nextDistributionStartTime);
         payment.lastDistributionTime = uint128(block.timestamp);
 
-        ISessionKeyManager sessionManager = ISessionKeyManager(payment.owner);
+        _executeDistribution(payment, periods);
 
+        emit Distribution(_recurringPaymentId, periods, block.timestamp);
+    }
+
+    function _executeDistribution(PaymentKey storage payment, uint256 periods) internal {
+        ISessionKeyManager sessionManager = ISessionKeyManager(payment.owner);
         uint256 beneficiaryCount = payment.beneficiaries.length;
         uint256 totalDistributeAmount;
 
@@ -205,8 +240,6 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
                 sessionManager.transferWithSessionKey(payment.tokenToDistribute, address(this), feeToSend);
             }
         }
-
-        emit Distribution(_recurringPaymentId, periods, block.timestamp);
     }
 
     function revokeRecurringPayments(uint256[] calldata _recurringPaymentIds) external whenNotPaused {

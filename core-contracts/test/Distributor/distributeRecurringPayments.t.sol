@@ -22,7 +22,7 @@ contract DistributeRecurringPaymentsTest is Test {
         rewardToken = new MockERC20("Reward Token", "RWT", 1_000_000 ether);
 
         // Deploy Distributor with the owner address
-        distributor = new Distributor();
+        distributor = new Distributor(owner);
 
         // Transfer tokens to Distributor contract
         tokenToDistribute.transfer(address(distributor), 500_000 ether);
@@ -66,7 +66,11 @@ contract DistributeRecurringPaymentsTest is Test {
         uint256[] memory rewardAmounts = new uint256[](1);
         rewardAmounts[0] = 1 ether;
 
+        address[] memory owners = new address[](1);
+        owners[0] = owner;
+
         distributor.batchCreateRecurringPayments(
+            owners,
             startTimes,
             endTimes,
             intervals,
