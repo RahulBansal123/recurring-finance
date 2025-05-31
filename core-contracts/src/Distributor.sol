@@ -71,11 +71,9 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
             revert ArrayLengthMismatch();
         }
 
-        paymentId = recurringPaymentCounter++;
-
         CreatePaymentParams memory params = CreatePaymentParams({
             owner: owner,
-            paymentId: paymentId,
+            paymentId: recurringPaymentCounter,
             startTime: startTime,
             endTime: endTime,
             cronSchedule: cronSchedule,
@@ -85,6 +83,7 @@ contract Distributor is AccessControl, ReentrancyGuard, Pausable, IDistributor {
         });
 
         _createRecurringPayment(params);
+        recurringPaymentCounter++;
     }
 
     function batchCreateRecurringPayments(

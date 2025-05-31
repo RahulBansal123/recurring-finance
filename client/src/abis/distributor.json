@@ -2,36 +2,92 @@
 	{
 		"type": "constructor",
 		"inputs": [
-			{ "name": "_owner", "type": "address", "internalType": "address" }
+			{
+				"name": "_creator",
+				"type": "address",
+				"internalType": "address"
+			}
 		],
 		"stateMutability": "nonpayable"
 	},
-	{ "type": "fallback", "stateMutability": "payable" },
-	{ "type": "receive", "stateMutability": "payable" },
+	{
+		"type": "receive",
+		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "BASIS_POINTS",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint96",
+				"internalType": "uint96"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "CREATOR_ROLE",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
 	{
 		"type": "function",
 		"name": "DEFAULT_ADMIN_ROLE",
 		"inputs": [],
-		"outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
-		"stateMutability": "view"
-	},
-	{
-		"type": "function",
-		"name": "canDistribute",
-		"inputs": [
+		"outputs": [
 			{
-				"name": "_recurringPaymentId",
-				"type": "uint256",
-				"internalType": "uint256"
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
 			}
 		],
-		"outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
 		"stateMutability": "view"
 	},
 	{
 		"type": "function",
-		"name": "createRecurringPayments",
+		"name": "DEFAULT_FEE_RATE",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint96",
+				"internalType": "uint96"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "MAX_FEE_RATE",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint96",
+				"internalType": "uint96"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "batchCreateRecurringPayments",
 		"inputs": [
+			{
+				"name": "_owners",
+				"type": "address[]",
+				"internalType": "address[]"
+			},
 			{
 				"name": "_startTimes",
 				"type": "uint256[]",
@@ -47,13 +103,21 @@
 				"type": "tuple[]",
 				"internalType": "struct CronLibrary.CronSchedule[]",
 				"components": [
-					{ "name": "hrs", "type": "uint8[]", "internalType": "uint8[]" },
+					{
+						"name": "hrs",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
 					{
 						"name": "daysOfMonth",
 						"type": "uint8[]",
 						"internalType": "uint8[]"
 					},
-					{ "name": "months", "type": "uint8[]", "internalType": "uint8[]" },
+					{
+						"name": "months",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
 					{
 						"name": "daysOfWeek",
 						"type": "uint8[]",
@@ -75,19 +139,99 @@
 				"name": "_tokensToDistribute",
 				"type": "address[]",
 				"internalType": "address[]"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "canDistribute",
+		"inputs": [
+			{
+				"name": "_recurringPaymentId",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "createRecurringPayment",
+		"inputs": [
+			{
+				"name": "owner",
+				"type": "address",
+				"internalType": "address"
 			},
 			{
-				"name": "_distributionFeeTokens",
+				"name": "startTime",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "endTime",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "cronSchedule",
+				"type": "tuple",
+				"internalType": "struct CronLibrary.CronSchedule",
+				"components": [
+					{
+						"name": "hrs",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
+					{
+						"name": "daysOfMonth",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
+					{
+						"name": "months",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
+					{
+						"name": "daysOfWeek",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					}
+				]
+			},
+			{
+				"name": "beneficiaries",
 				"type": "address[]",
 				"internalType": "address[]"
 			},
 			{
-				"name": "_distributionFeeAmounts",
+				"name": "beneficiaryAmounts",
 				"type": "uint256[]",
 				"internalType": "uint256[]"
+			},
+			{
+				"name": "tokenToDistribute",
+				"type": "address",
+				"internalType": "address"
 			}
 		],
-		"outputs": [],
+		"outputs": [
+			{
+				"name": "paymentId",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
 		"stateMutability": "nonpayable"
 	},
 	{
@@ -99,7 +243,11 @@
 				"type": "uint256",
 				"internalType": "uint256"
 			},
-			{ "name": "_maxPeriods", "type": "uint256", "internalType": "uint256" }
+			{
+				"name": "_maxPeriods",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
 		],
 		"outputs": [],
 		"stateMutability": "nonpayable"
@@ -115,8 +263,30 @@
 			}
 		],
 		"outputs": [
-			{ "name": "", "type": "address", "internalType": "address" },
-			{ "name": "", "type": "uint256", "internalType": "uint256" }
+			{
+				"name": "",
+				"type": "uint96",
+				"internalType": "uint96"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "getOwnerPayments",
+		"inputs": [
+			{
+				"name": "owner",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			}
 		],
 		"stateMutability": "view"
 	},
@@ -131,20 +301,36 @@
 			}
 		],
 		"outputs": [
-			{ "name": "", "type": "uint256", "internalType": "uint256" },
-			{ "name": "", "type": "uint256", "internalType": "uint256" },
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
 			{
 				"name": "",
 				"type": "tuple",
 				"internalType": "struct CronLibrary.CronSchedule",
 				"components": [
-					{ "name": "hrs", "type": "uint8[]", "internalType": "uint8[]" },
+					{
+						"name": "hrs",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
 					{
 						"name": "daysOfMonth",
 						"type": "uint8[]",
 						"internalType": "uint8[]"
 					},
-					{ "name": "months", "type": "uint8[]", "internalType": "uint8[]" },
+					{
+						"name": "months",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
 					{
 						"name": "daysOfWeek",
 						"type": "uint8[]",
@@ -152,12 +338,36 @@
 					}
 				]
 			},
-			{ "name": "", "type": "uint256", "internalType": "uint256" },
-			{ "name": "", "type": "uint256", "internalType": "uint256" },
-			{ "name": "", "type": "address", "internalType": "address" },
-			{ "name": "", "type": "address[]", "internalType": "address[]" },
-			{ "name": "", "type": "uint256[]", "internalType": "uint256[]" },
-			{ "name": "", "type": "bool", "internalType": "bool" }
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "",
+				"type": "address[]",
+				"internalType": "address[]"
+			},
+			{
+				"name": "",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			},
+			{
+				"name": "",
+				"type": "bool",
+				"internalType": "bool"
+			}
 		],
 		"stateMutability": "view"
 	},
@@ -165,17 +375,35 @@
 		"type": "function",
 		"name": "getRoleAdmin",
 		"inputs": [
-			{ "name": "role", "type": "bytes32", "internalType": "bytes32" }
+			{
+				"name": "role",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
 		],
-		"outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
 		"stateMutability": "view"
 	},
 	{
 		"type": "function",
 		"name": "grantRole",
 		"inputs": [
-			{ "name": "role", "type": "bytes32", "internalType": "bytes32" },
-			{ "name": "account", "type": "address", "internalType": "address" }
+			{
+				"name": "role",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			},
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			}
 		],
 		"outputs": [],
 		"stateMutability": "nonpayable"
@@ -184,10 +412,44 @@
 		"type": "function",
 		"name": "hasRole",
 		"inputs": [
-			{ "name": "role", "type": "bytes32", "internalType": "bytes32" },
-			{ "name": "account", "type": "address", "internalType": "address" }
+			{
+				"name": "role",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			},
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			}
 		],
-		"outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "pause",
+		"inputs": [],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "paused",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
 		"stateMutability": "view"
 	},
 	{
@@ -206,8 +468,16 @@
 			}
 		],
 		"outputs": [
-			{ "name": "", "type": "uint256", "internalType": "uint256" },
-			{ "name": "", "type": "uint256", "internalType": "uint256" }
+			{
+				"name": "periods",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "nextDistributionStartTime",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
 		],
 		"stateMutability": "view"
 	},
@@ -215,14 +485,24 @@
 		"type": "function",
 		"name": "recurringPaymentCounter",
 		"inputs": [],
-		"outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
 		"stateMutability": "view"
 	},
 	{
 		"type": "function",
 		"name": "renounceRole",
 		"inputs": [
-			{ "name": "role", "type": "bytes32", "internalType": "bytes32" },
+			{
+				"name": "role",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			},
 			{
 				"name": "callerConfirmation",
 				"type": "address",
@@ -249,8 +529,16 @@
 		"type": "function",
 		"name": "revokeRole",
 		"inputs": [
-			{ "name": "role", "type": "bytes32", "internalType": "bytes32" },
-			{ "name": "account", "type": "address", "internalType": "address" }
+			{
+				"name": "role",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			},
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			}
 		],
 		"outputs": [],
 		"stateMutability": "nonpayable"
@@ -264,7 +552,29 @@
 				"type": "uint256",
 				"internalType": "uint256"
 			},
-			{ "name": "_newEndTime", "type": "uint256", "internalType": "uint256" }
+			{
+				"name": "_newEndTime",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "setFeeRate",
+		"inputs": [
+			{
+				"name": "_recurringPaymentId",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_newFeeRate",
+				"type": "uint96",
+				"internalType": "uint96"
+			}
 		],
 		"outputs": [],
 		"stateMutability": "nonpayable"
@@ -273,19 +583,25 @@
 		"type": "function",
 		"name": "supportsInterface",
 		"inputs": [
-			{ "name": "interfaceId", "type": "bytes4", "internalType": "bytes4" }
+			{
+				"name": "interfaceId",
+				"type": "bytes4",
+				"internalType": "bytes4"
+			}
 		],
-		"outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
 		"stateMutability": "view"
 	},
 	{
 		"type": "function",
-		"name": "test",
-		"inputs": [
-			{ "name": "token", "type": "address", "internalType": "address" },
-			{ "name": "to", "type": "address", "internalType": "address" },
-			{ "name": "amount", "type": "uint256", "internalType": "uint256" }
-		],
+		"name": "unpause",
+		"inputs": [],
 		"outputs": [],
 		"stateMutability": "nonpayable"
 	},
@@ -293,9 +609,21 @@
 		"type": "function",
 		"name": "withdrawFunds",
 		"inputs": [
-			{ "name": "_token", "type": "address", "internalType": "address" },
-			{ "name": "_amount", "type": "uint256", "internalType": "uint256" },
-			{ "name": "_beneficiary", "type": "address", "internalType": "address" }
+			{
+				"name": "_token",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_amount",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_beneficiary",
+				"type": "address",
+				"internalType": "address"
+			}
 		],
 		"outputs": [],
 		"stateMutability": "nonpayable"
@@ -305,13 +633,13 @@
 		"name": "Distribution",
 		"inputs": [
 			{
-				"name": "recurringPaymentId",
+				"name": "paymentId",
 				"type": "uint256",
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256"
 			},
 			{
-				"name": "period",
+				"name": "periods",
 				"type": "uint256",
 				"indexed": false,
 				"internalType": "uint256"
@@ -330,9 +658,9 @@
 		"name": "DistributionRevoked",
 		"inputs": [
 			{
-				"name": "recurringPaymentId",
+				"name": "paymentId",
 				"type": "uint256",
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256"
 			}
 		],
@@ -343,9 +671,9 @@
 		"name": "EndTimeSet",
 		"inputs": [
 			{
-				"name": "recurringPaymentId",
+				"name": "paymentId",
 				"type": "uint256",
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256"
 			},
 			{
@@ -359,12 +687,31 @@
 	},
 	{
 		"type": "event",
+		"name": "FeeRateSet",
+		"inputs": [
+			{
+				"name": "paymentId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "newFeeRate",
+				"type": "uint96",
+				"indexed": false,
+				"internalType": "uint96"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"type": "event",
 		"name": "NewRecurringPayment",
 		"inputs": [
 			{
-				"name": "recurringPaymentId",
+				"name": "paymentId",
 				"type": "uint256",
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256"
 			},
 			{
@@ -385,13 +732,21 @@
 				"indexed": false,
 				"internalType": "struct CronLibrary.CronSchedule",
 				"components": [
-					{ "name": "hrs", "type": "uint8[]", "internalType": "uint8[]" },
+					{
+						"name": "hrs",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
 					{
 						"name": "daysOfMonth",
 						"type": "uint8[]",
 						"internalType": "uint8[]"
 					},
-					{ "name": "months", "type": "uint8[]", "internalType": "uint8[]" },
+					{
+						"name": "months",
+						"type": "uint8[]",
+						"internalType": "uint8[]"
+					},
 					{
 						"name": "daysOfWeek",
 						"type": "uint8[]",
@@ -404,18 +759,19 @@
 				"type": "address",
 				"indexed": false,
 				"internalType": "address"
-			},
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"type": "event",
+		"name": "Paused",
+		"inputs": [
 			{
-				"name": "distributionFeeToken",
+				"name": "account",
 				"type": "address",
 				"indexed": false,
 				"internalType": "address"
-			},
-			{
-				"name": "distributionFeeAmount",
-				"type": "uint256",
-				"indexed": false,
-				"internalType": "uint256"
 			}
 		],
 		"anonymous": false
@@ -495,21 +851,177 @@
 		],
 		"anonymous": false
 	},
-	{ "type": "error", "name": "AccessControlBadConfirmation", "inputs": [] },
+	{
+		"type": "event",
+		"name": "Unpaused",
+		"inputs": [
+			{
+				"name": "account",
+				"type": "address",
+				"indexed": false,
+				"internalType": "address"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"type": "error",
+		"name": "AccessControlBadConfirmation",
+		"inputs": []
+	},
 	{
 		"type": "error",
 		"name": "AccessControlUnauthorizedAccount",
 		"inputs": [
-			{ "name": "account", "type": "address", "internalType": "address" },
-			{ "name": "neededRole", "type": "bytes32", "internalType": "bytes32" }
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "neededRole",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
 		]
 	},
-	{ "type": "error", "name": "ReentrancyGuardReentrantCall", "inputs": [] },
+	{
+		"type": "error",
+		"name": "ArrayLengthMismatch",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "CannotDistribute",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "DuplicateBeneficiary",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "DuplicateValue",
+		"inputs": [
+			{
+				"name": "field",
+				"type": "string",
+				"internalType": "string"
+			},
+			{
+				"name": "value",
+				"type": "uint8",
+				"internalType": "uint8"
+			}
+		]
+	},
+	{
+		"type": "error",
+		"name": "EndTimeAlreadyPassed",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "EnforcedPause",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ExcessiveArrayLength",
+		"inputs": [
+			{
+				"name": "field",
+				"type": "string",
+				"internalType": "string"
+			}
+		]
+	},
+	{
+		"type": "error",
+		"name": "ExpectedPause",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "FailedToSendEther",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InsufficientBalance",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidEndTime",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidFeeRate",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidFieldValue",
+		"inputs": [
+			{
+				"name": "field",
+				"type": "string",
+				"internalType": "string"
+			},
+			{
+				"name": "value",
+				"type": "uint8",
+				"internalType": "uint8"
+			}
+		]
+	},
+	{
+		"type": "error",
+		"name": "InvalidRecurringPaymentId",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidTimeRange",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "PaymentAlreadyRevoked",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ReentrancyGuardReentrantCall",
+		"inputs": []
+	},
 	{
 		"type": "error",
 		"name": "SafeERC20FailedOperation",
 		"inputs": [
-			{ "name": "token", "type": "address", "internalType": "address" }
+			{
+				"name": "token",
+				"type": "address",
+				"internalType": "address"
+			}
 		]
+	},
+	{
+		"type": "error",
+		"name": "Unauthorized",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroAmount",
+		"inputs": []
 	}
 ]
